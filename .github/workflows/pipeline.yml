@@ -3,30 +3,31 @@ name: Tourism Wellness MLOps Pipeline
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 0 * * 0'
   workflow_dispatch:
-
-env:
-  PYTHON_VERSION: '3.10'
 
 jobs:
   data-preparation:
     name: Data Preparation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install pandas numpy scikit-learn huggingface_hub datasets
-      - run: python scripts/data_preparation.py
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas numpy scikit-learn huggingface_hub datasets
+
+      - name: Run data preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      - uses: actions/upload-artifact@v3
+        run: python scripts/data_preparation.py
+
+      - name: Upload processed data
+        uses: actions/upload-artifact@v4
         with:
           name: processed-data
           path: Visit_with_Us/data/
@@ -37,20 +38,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: data-preparation
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install scikit-learn xgboost mlflow pandas numpy huggingface_hub datasets
-      - uses: actions/download-artifact@v3
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install scikit-learn xgboost mlflow pandas numpy huggingface_hub datasets
+
+      - name: Download processed data
+        uses: actions/download-artifact@v4
         with:
           name: processed-data
           path: Visit_with_Us/data/
-      - run: python scripts/model_training.py
+
+      - name: Train and evaluate models
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      - uses: actions/upload-artifact@v3
+        run: python scripts/model_training.py
+
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: model-artifacts
           path: Visit_with_Us/models/
@@ -60,18 +71,39 @@ jobs:
     name: Deploy to Hugging Face Spaces
     runs-on: ubuntu-latest
     needs: model-training
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install huggingface_hub
-      - uses: actions/download-artifact@v3
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install huggingface_hub
+
+      - name: Download model artifacts
+        uses: actions/download-artifact@v4
         with:
           name: model-artifacts
           path: Visit_with_Us/models/
-      - run: python Visit_with_Us/deployment/deploy_to_hf.py
+
+      - name: Deploy to Hugging Face Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python - <<'EOF'
+          import os
+          from huggingface_hub import HfApi, login
+          login(token=os.environ["HF_TOKEN"], add_to_git_credential=False)
+          api = HfApi()
+          base = "Visit_with_Us/deployment"
+          for fname in ["app.py", "requirements.txt", "Dockerfile"]:
+              api.upload_file(path_or_fileobj=f"{base}/{fname}",
+                              path_in_repo=fname,
+                              repo_id="anuragmishrarock/tourism-wellness-app",
+                              repo_type="space")
+              print(f"Uploaded {fname}")
+          print("Deployment complete!")
+          EOF
