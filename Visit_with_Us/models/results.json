@@ -1,0 +1,66 @@
+{
+  "Decision Tree": {
+    "best_params": {
+      "criterion": "entropy",
+      "max_depth": 7,
+      "min_samples_split": 10
+    },
+    "accuracy": 0.8535108958837773,
+    "roc_auc": 0.8358037962151,
+    "f1_score": 0.5433962264150943,
+    "precision": 0.6792452830188679,
+    "recall": 0.4528301886792453,
+    "cv_roc_auc": 0.8125609540802422
+  },
+  "Random Forest": {
+    "best_params": {
+      "max_depth": 7,
+      "min_samples_split": 2,
+      "n_estimators": 100
+    },
+    "accuracy": 0.8523002421307506,
+    "roc_auc": 0.8758168085768436,
+    "f1_score": 0.42452830188679247,
+    "precision": 0.8490566037735849,
+    "recall": 0.2830188679245283,
+    "cv_roc_auc": 0.8813037386124926
+  },
+  "AdaBoost": {
+    "best_params": {
+      "learning_rate": 1.0,
+      "n_estimators": 100
+    },
+    "accuracy": 0.8341404358353511,
+    "roc_auc": 0.8238899418215421,
+    "f1_score": 0.44081632653061226,
+    "precision": 0.627906976744186,
+    "recall": 0.33962264150943394,
+    "cv_roc_auc": 0.8153641104100672
+  },
+  "Gradient Boosting": {
+    "best_params": {
+      "learning_rate": 0.2,
+      "max_depth": 5,
+      "n_estimators": 100
+    },
+    "accuracy": 0.9334140435835351,
+    "roc_auc": 0.953391228913845,
+    "f1_score": 0.8109965635738832,
+    "precision": 0.8939393939393939,
+    "recall": 0.7421383647798742,
+    "cv_roc_auc": 0.9176658614570627
+  },
+  "XGBoost": {
+    "best_params": {
+      "learning_rate": 0.2,
+      "max_depth": 5,
+      "n_estimators": 200
+    },
+    "accuracy": 0.9225181598062954,
+    "roc_auc": 0.9502701479448955,
+    "f1_score": 0.762962962962963,
+    "precision": 0.9279279279279279,
+    "recall": 0.6477987421383647,
+    "cv_roc_auc": 0.9197575803812947
+  }
+}
